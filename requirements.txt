@@ -1,0 +1,12 @@
+kaggle
+numpy
+pandas
+pyarrow
+iterative-stratification
+tqdm
+joblib
+Pillow
+albumentations
+torch
+pretrainedmodels
+jupyterlab

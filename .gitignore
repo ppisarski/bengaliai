@@ -1,3 +1,15 @@
+*.pkl
+*.bin
+trained/
+trained/*.bin
+trained/*.pkl
+input/
+*.csv
+*.parquet
+*.npy
+.idea/
+.ipynb_checkpoints/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
