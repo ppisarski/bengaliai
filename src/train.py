@@ -7,7 +7,7 @@ from tqdm import tqdm
 from src.model_dispatcher import MODEL_DISPATCHER
 from src.dataset import BengaliDatasetTrain
 
-DEVICE = "cpu"
+DEVICE = "cuda"
 TRAINING_FOLDS_CSV = os.environ.get("TRAINING_FOLDS_CSV")
 IMG_HEIGHT = int(os.environ.get("IMG_HEIGHT"))
 IMG_WIDTH = int(os.environ.get("IMG_WIDTH"))
@@ -41,11 +41,10 @@ def train(dataset, data_loader, model, optimizer):
         vowel_diacritic = d["vowel_diacritic"]
         consonant_diacritic = d["consonant_diacritic"]
 
-        if DEVICE == "cuda":
-            image = image.to(DEVICE, dtype=torch.float)
-            grapheme_root = image.to(DEVICE, dtype=torch.long)
-            vowel_diacritic = image.to(DEVICE, dtype=torch.long)
-            consonant_diacritic = image.to(DEVICE, dtype=torch.long)
+        image = image.to(DEVICE, dtype=torch.float)
+        grapheme_root = grapheme_root.to(DEVICE, dtype=torch.long)
+        vowel_diacritic = vowel_diacritic.to(DEVICE, dtype=torch.long)
+        consonant_diacritic = consonant_diacritic.to(DEVICE, dtype=torch.long)
 
         optimizer.zero_grad()
         outputs = model(image)
@@ -68,9 +67,9 @@ def evaluate(dataset, data_loader, model):
         consonant_diacritic = d["consonant_diacritic"]
 
         image = image.to(DEVICE, dtype=torch.float)
-        grapheme_root = image.to(DEVICE, dtype=torch.long)
-        vowel_diacritic = image.to(DEVICE, dtype=torch.long)
-        consonant_diacritic = image.to(DEVICE, dtype=torch.long)
+        grapheme_root = grapheme_root.to(DEVICE, dtype=torch.long)
+        vowel_diacritic = vowel_diacritic.to(DEVICE, dtype=torch.long)
+        consonant_diacritic = consonant_diacritic.to(DEVICE, dtype=torch.long)
 
         outputs = model(image)
         targets = (grapheme_root, vowel_diacritic, consonant_diacritic)
@@ -95,7 +94,7 @@ def main():
         dataset=train_dataset,
         batch_size=TRAIN_BATCH_SIZE,
         shuffle=True,
-        num_workers=4
+        num_workers=6
     )
 
     valid_dataset = BengaliDatasetTrain(
@@ -110,21 +109,21 @@ def main():
         dataset=valid_dataset,
         batch_size=TEST_BATCH_SIZE,
         shuffle=False,
-        num_workers=4
+        num_workers=6
     )
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=1.e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,
                                                            mode="min",
                                                            patience=5,
                                                            factor=0.3,
                                                            verbose=True)
     if torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
+        model = nn.DataParallel()
 
     for epoch in range(EPOCHS):
         train(train_dataset, train_loader, model, optimizer)
-        val_scode = evaluate(valid_dataset, valid_loader, model)
+        val_score = evaluate(valid_dataset, valid_loader, model)
         scheduler.step(val_score)
         torch.save(model.state_dict(), f"{BASE_MODEL}_fold{VALIDATION_FOLDS[0]}.bin")
 
