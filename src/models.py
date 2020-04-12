@@ -23,3 +23,47 @@ class ResNet34(nn.Module):
         l1 = self.l1(x)
         l2 = self.l2(x)
         return l0, l1, l2
+
+
+class VGG11(nn.Module):
+    def __init__(self, pretrained):
+        super(VGG11, self).__init__()
+        if pretrained is True:
+            self.model = pretrainedmodels.__dict__["vgg11"](pretrained="imagenet")
+        else:
+            self.model = pretrainedmodels.__dict__["vgg11"](pretrained=None)
+
+        self.l0 = nn.Linear(4096, 168)
+        self.l1 = nn.Linear(4096, 11)
+        self.l2 = nn.Linear(4096, 7)
+
+    def forward(self, x):
+        bs, _, _, _ = x.shape
+        x = self.model.features(x)
+        x = F.adaptive_avg_pool2d(x, 1).reshape(bs, -1)
+        l0 = self.l0(x)
+        l1 = self.l1(x)
+        l2 = self.l2(x)
+        return l0, l1, l2
+
+
+class AlexNet(nn.Module):
+    def __init__(self, pretrained):
+        super(AlexNet, self).__init__()
+        if pretrained is True:
+            self.model = pretrainedmodels.__dict__["alexnet"](pretrained="imagenet")
+        else:
+            self.model = pretrainedmodels.__dict__["alexnet"](pretrained=None)
+
+        self.l0 = nn.Linear(4096, 168)
+        self.l1 = nn.Linear(4096, 11)
+        self.l2 = nn.Linear(4096, 7)
+
+    def forward(self, x):
+        bs, _, _, _ = x.shape
+        x = self.model.features(x)
+        x = F.adaptive_avg_pool2d(x, 1).reshape(bs, -1)
+        l0 = self.l0(x)
+        l1 = self.l1(x)
+        l2 = self.l2(x)
+        return l0, l1, l2

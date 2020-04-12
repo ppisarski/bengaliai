@@ -7,7 +7,7 @@ from tqdm import tqdm
 from src.model_dispatcher import MODEL_DISPATCHER
 from src.dataset import BengaliDatasetTrain
 
-DEVICE = "cuda"
+DEVICE = "cpu"
 TRAINING_FOLDS_CSV = os.environ.get("TRAINING_FOLDS_CSV")
 IMG_HEIGHT = int(os.environ.get("IMG_HEIGHT"))
 IMG_WIDTH = int(os.environ.get("IMG_WIDTH"))
